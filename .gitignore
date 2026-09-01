@@ -19,3 +19,9 @@ tfplan.bin
 Thumbs.db
 .vscode/
 *.swp
+
+# IDE
+.idea/
+
+# Kustomize secret source
+kubernetes/mongodb.env

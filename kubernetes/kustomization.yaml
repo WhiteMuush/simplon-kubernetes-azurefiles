@@ -8,6 +8,5 @@ resources:
   - service.yaml
 secretGenerator:
   - name: mongodb-secret
-    literals:
-      - username=admin
-      - password=ChangeMe_Str0ng!
+    envs:
+      - mongodb.env
