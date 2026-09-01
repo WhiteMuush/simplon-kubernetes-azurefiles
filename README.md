@@ -128,37 +128,26 @@ Note that `MONGO_INITDB_ROOT_*` is read only when the data directory is empty.
 Once the database is initialized on the persistent volume, rotating the
 password is a MongoDB operation, not a Kubernetes one.
 
-## Walkthrough
-
-1. `make setup` writes `.env` from your `glab` and `az` sessions, asking for the
-   GitLab token once
-2. `make mongo-env` generates the MongoDB password
-3. `make init` then `make plan` and `make apply` build the Azure side, around
-   ten minutes for the cluster
-4. `make kubeconfig` points `kubectl` at the cluster
-5. `make csi-check` shows the CSI driver pods and the StorageClass
-6. `make storageclass` creates the NFS class
-7. `make test-pvc` proves dynamic provisioning: the claim asks for 10 GiB and
-   binds to a 100 GiB share, the Premium minimum. `make test-pvc-clean` removes
-   it
-8. `make deploy` applies the MongoDB manifests
-9. `make mount-check` shows the NFS mount on `/data/db`
-10. `make persistence` writes a document, deletes the pod, and reads the
-    document back from the new one
-11. `make destroy` tears everything down at the end of a session
-
-## Makefile reference
-
-From a fresh clone, four commands are enough to reach a running cluster:
+## Setup
 
 ```bash
 make setup
 make mongo-env
-make init && make plan && make apply
+make init
+make plan
+make apply
 make kubeconfig
+make csi-check
+make storageclass
+make test-pvc
+make test-pvc-clean
+make deploy
+make mount-check
+make persistence
+make destroy
 ```
 
-Every other target is listed by `make help`.
+`make help` lists every target.
 
 ## Documentation
 
