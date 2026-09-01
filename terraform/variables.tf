@@ -4,7 +4,7 @@ variable "subscription_id" {
 }
 
 variable "resource_group_name" {
-  description = "Existing resource group holding every resource of this lab."
+  description = "Ressource Group"
   type        = string
   default     = "mpetitRG"
 }
