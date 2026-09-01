@@ -73,8 +73,22 @@ csi-check:
 
 # Application
 
+## mongo-env: generate kubernetes/mongodb.env with a random password
+mongo-env:
+	@if [ -f $(K8S_DIR)/mongodb.env ]; then \
+		echo "$(K8S_DIR)/mongodb.env already exists, leaving it alone."; \
+	else \
+		umask 077; \
+		printf 'username=admin\npassword=%s\n' "$$(openssl rand -base64 32 | tr -dc 'A-Za-z0-9' | cut -c1-24)" > $(K8S_DIR)/mongodb.env; \
+		echo "wrote $(K8S_DIR)/mongodb.env"; \
+	fi
+
+$(K8S_DIR)/mongodb.env:
+	@echo "Missing $@. Run: make mongo-env"
+	@exit 1
+
 ## deploy: apply the MongoDB manifests through kustomize
-deploy:
+deploy: $(K8S_DIR)/mongodb.env
 	kubectl apply -k $(K8S_DIR)
 	kubectl -n $(APP_NS) rollout status deployment/mongodb
 

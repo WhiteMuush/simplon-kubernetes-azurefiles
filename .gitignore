@@ -22,3 +22,6 @@ Thumbs.db
 
 # IDE
 .idea/
+
+# Kustomize secret source
+kubernetes/mongodb.env
