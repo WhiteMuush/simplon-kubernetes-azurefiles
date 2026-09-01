@@ -19,3 +19,6 @@ tfplan.bin
 Thumbs.db
 .vscode/
 *.swp
+
+# IDE
+.idea/
