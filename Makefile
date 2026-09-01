@@ -18,7 +18,7 @@ TF_PLAN  := tfplan.bin
 
 MONGOSH := mongosh --quiet -u "$$MONGO_INITDB_ROOT_USERNAME" -p "$$MONGO_INITDB_ROOT_PASSWORD" --authenticationDatabase admin
 
-.PHONY: help setup rotate-token init plan apply destroy kubeconfig csi-check \
+.PHONY: help setup rotate-token init plan apply destroy kubeconfig storageclass test-pvc test-pvc-clean csi-check \
 	    deploy undeploy status mount-check insert read restart persistence
 
 ## help: list available targets
@@ -65,6 +65,20 @@ destroy: $(ENV)
 ## kubeconfig: point kubectl at the AKS cluster
 kubeconfig:
 	az aks get-credentials --resource-group $(RESOURCE_GROUP) --name $(CLUSTER) --overwrite-existing
+
+## storageclass: create the NFS StorageClass
+storageclass:
+	kubectl apply -f $(K8S_DIR)/storageclass.yaml
+
+## test-pvc: provision a throwaway PVC to prove dynamic provisioning works
+test-pvc:
+	kubectl apply -f $(K8S_DIR)/test-pvc.yaml
+	kubectl wait --for=jsonpath='{.status.phase}'=Bound pvc/nfs-test --timeout=180s
+	kubectl get pvc nfs-test
+
+## test-pvc-clean: remove the throwaway PVC and its share
+test-pvc-clean:
+	kubectl delete -f $(K8S_DIR)/test-pvc.yaml --ignore-not-found
 
 ## csi-check: confirm the Azure Files CSI driver runs on the cluster
 csi-check:
