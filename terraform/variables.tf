@@ -30,7 +30,7 @@ variable "node_count" {
 variable "node_vm_size" {
   description = "VM size of the default pool."
   type        = string
-  default     = "Standard_B2s"
+  default     = "Standard_D2s_v3"
 }
 
 variable "vnet_name" {
@@ -52,19 +52,19 @@ variable "aks_subnet_prefix" {
 }
 
 variable "service_cidr" {
-  description = "CIDR of the Kubernetes services, must not overlap the vnet."
+  description = "CIDR of the Kubernetes services."
   type        = string
   default     = "10.240.0.0/16"
 }
 
 variable "dns_service_ip" {
-  description = "Address of kube-dns, must sit inside service_cidr."
+  description = "Address of kube-dns."
   type        = string
   default     = "10.240.0.10"
 }
 
 variable "storage_account_name" {
-  description = "Storage account holding the NFS share. Globally unique, 3 to 24 lowercase characters."
+  description = "Storage account holding the NFS share."
   type        = string
   default     = "mpazurefilesnfs"
 }
