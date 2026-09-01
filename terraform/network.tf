@@ -1,9 +1,13 @@
+## Common tags
+
 locals {
   common_tags = {
     Project     = "simplon-kubernetes-azurefiles"
     Environment = "Lab"
   }
 }
+
+## Network configuration
 
 resource "azurerm_virtual_network" "this" {
   name                = var.vnet_name
@@ -13,20 +17,18 @@ resource "azurerm_virtual_network" "this" {
   tags                = local.common_tags
 }
 
-# The nodes and the private endpoint share this subnet. Network policies for
-# private endpoints have to be disabled here, otherwise Azure refuses to place
-# the endpoint, with an error that does not name the policy.
 resource "azurerm_subnet" "aks" {
-  name                              = "snet-aks"
-  resource_group_name               = var.resource_group_name
-  virtual_network_name              = azurerm_virtual_network.this.name
-  address_prefixes                  = [var.aks_subnet_prefix]
+  name                 = "snet-aks"
+  resource_group_name  = var.resource_group_name
+  virtual_network_name = azurerm_virtual_network.this.name
+  address_prefixes     = [var.aks_subnet_prefix]
+
+  # Required before a private endpoint can be placed here.
   private_endpoint_network_policies = "Disabled"
 }
 
-# Azure Files answers on a public name. Without this zone the cluster resolves
-# the account to a public address that the account refuses, and the PVC stays
-# Pending with no obvious cause.
+## Private DNS for the file service
+
 resource "azurerm_private_dns_zone" "file" {
   name                = "privatelink.file.core.windows.net"
   resource_group_name = var.resource_group_name
@@ -40,6 +42,8 @@ resource "azurerm_private_dns_zone_virtual_network_link" "file" {
   registration_enabled = false
   tags                 = local.common_tags
 }
+
+## Private endpoint to the storage account
 
 resource "azurerm_private_endpoint" "file" {
   name                = "pe-${var.storage_account_name}"

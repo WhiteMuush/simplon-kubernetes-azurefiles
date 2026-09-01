@@ -51,9 +51,6 @@ variable "aks_subnet_prefix" {
   default     = "10.0.1.0/24"
 }
 
-# Kept out of the virtual network range on purpose: an overlap between the
-# service CIDR and the node subnet breaks the cluster in ways that are painful
-# to diagnose.
 variable "service_cidr" {
   description = "CIDR of the Kubernetes services, must not overlap the vnet."
   type        = string

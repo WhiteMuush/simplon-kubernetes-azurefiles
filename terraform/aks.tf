@@ -1,3 +1,5 @@
+## AKS configuration
+
 resource "azurerm_kubernetes_cluster" "this" {
   name                = var.cluster_name
   location            = var.location
@@ -19,8 +21,6 @@ resource "azurerm_kubernetes_cluster" "this" {
     type = "SystemAssigned"
   }
 
-  # Azure CNI puts the pods on the subnet above, which is what lets them reach
-  # the private endpoint without any extra routing.
   network_profile {
     network_plugin = "azure"
     service_cidr   = var.service_cidr
