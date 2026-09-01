@@ -6,9 +6,12 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 ENV_FILE="$ROOT/.env"
 
+# An existing .env is overwritten, but never lost: the previous token may still
+# be the only copy of a value that cannot be read back from GitLab.
 if [ -f "$ENV_FILE" ]; then
-  echo ".env already exists. Delete it first to start over."
-  exit 0
+  cp -p "$ENV_FILE" "$ENV_FILE.bak"
+  chmod 600 "$ENV_FILE.bak"
+  echo "Existing .env backed up to .env.bak"
 fi
 
 command -v glab > /dev/null || { echo "glab not found." >&2; exit 1; }
