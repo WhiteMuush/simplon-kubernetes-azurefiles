@@ -17,8 +17,15 @@ resource "azurerm_storage_account" "files" {
 
 ## Permissions for the CSI driver
 
+# The driver calls Azure with the control plane identity, not the kubelet one.
 resource "azurerm_role_assignment" "csi_storage" {
   scope                = azurerm_storage_account.files.id
   role_definition_name = "Storage Account Contributor"
-  principal_id         = azurerm_kubernetes_cluster.this.kubelet_identity[0].object_id
+  principal_id         = azurerm_kubernetes_cluster.this.identity[0].principal_id
+}
+
+resource "azurerm_role_assignment" "csi_network" {
+  scope                = azurerm_virtual_network.this.id
+  role_definition_name = "Network Contributor"
+  principal_id         = azurerm_kubernetes_cluster.this.identity[0].principal_id
 }
