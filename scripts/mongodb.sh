@@ -7,6 +7,7 @@ set -euo pipefail
 # Credentials never reach the manifests: kustomize reads them from this file,
 # which stays out of git.
 generate_credentials() {
+  step "MongoDB credentials: $MONGO_ENV_FILE, gitignored"
   if [ -f "$MONGO_ENV_FILE" ]; then
     info "$MONGO_ENV_FILE already exists, leaving it alone."
     return 0
@@ -26,33 +27,41 @@ mongo_eval() {
 }
 
 deploy_app() {
+  step "MongoDB: applying the manifests, then waiting for the pod"
   require_mongo_env
   kubectl apply -k "$K8S_DIR"
   kubectl -n "$APP_NS" rollout status deployment/mongodb
+  done_msg "MongoDB is running. Next: make verify"
 }
 
 undeploy_app() {
+  step "MongoDB: removing the application, keeping the PVC"
   kubectl delete -k "$K8S_DIR" --ignore-not-found
 }
 
 show_status() {
+  step "Namespace $APP_NS, and the volumes behind it"
   kubectl -n "$APP_NS" get pods,svc,pvc
   kubectl get pv
 }
 
 check_mount() {
+  step "Mount check: /data/db should read nfs4, not a local disk"
   kubectl -n "$APP_NS" exec deploy/mongodb -- df -h -T /data/db
 }
 
 insert_document() {
+  step "Writing one document"
   mongo_eval 'db.getSiblingDB("lab").proof.insertOne({written_at: new Date()})'
 }
 
 read_documents() {
+  step "Reading every document back"
   mongo_eval 'db.getSiblingDB("lab").proof.find().toArray()'
 }
 
 restart_pod() {
+  step "Killing the pod, waiting for its replacement"
   kubectl -n "$APP_NS" delete pod -l app=mongodb
   kubectl -n "$APP_NS" rollout status deployment/mongodb
 }

@@ -5,18 +5,22 @@ set -euo pipefail
 . "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 
 terraform_init() {
+  step "Terraform init: remote state and providers"
   terraform -chdir="$TF_DIR" init
 }
 
 terraform_plan() {
+  step "Terraform plan: what would change in Azure, saved to $TF_PLAN"
   terraform -chdir="$TF_DIR" plan -out="$TF_PLAN"
 }
 
 terraform_apply() {
+  step "Terraform apply: creating the storage account, network and cluster"
   terraform -chdir="$TF_DIR" apply "$TF_PLAN"
 }
 
 terraform_destroy() {
+  step "Terraform destroy: removing every Azure resource of the lab"
   terraform -chdir="$TF_DIR" destroy
 }
 

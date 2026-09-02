@@ -109,7 +109,7 @@ Letting AKS generate its own network is one line shorter, but the network then
 lives in the `MC_` resource group, deleted with the cluster. Since the storage
 account and the private endpoint must sit in that same network, the cluster
 could not be destroyed at the end of a session without taking the storage with
-it. Declaring the network in `mpetitRG` makes `make destroy` and `make apply`
+it. Declaring the network in `mpetitRG` makes `make destroy` and `make up`
 a daily routine instead of a rebuild.
 
 ### MongoDB credentials come from a gitignored file
@@ -117,7 +117,7 @@ a daily routine instead of a rebuild.
 The provided manifests carried the root password as a literal in
 `kustomization.yaml`, in clear text in a public repository. The generator now
 reads `kubernetes/mongodb.env`, which is gitignored and produced by
-`make mongo-env` with a random password.
+`make setup` with a random password.
 
 Kustomize appends a hash of the content to the Secret name and rewrites every
 reference to it, so changing the password changes the Deployment and triggers a
@@ -131,23 +131,25 @@ password is a MongoDB operation, not a Kubernetes one.
 ## Setup
 
 ```bash
-make setup
-make mongo-env
-make init
-make plan
-make apply
-make kubeconfig
-make csi-check
-make storageclass
-make test-pvc
-make test-pvc-clean
-make deploy
-make mount-check
+make setup    # once per clone: .env and the MongoDB password
+make up       # terraform, kubeconfig, StorageClass, MongoDB
+make verify   # CSI driver, dynamic provisioning, NFS mount
 make persistence
 make destroy
 ```
 
-`make help` lists every target.
+`make up` plans and applies in one go, without pausing for review, which suits
+a lab rebuilt every day. To read the plan before it runs, use the scripts
+directly: `./scripts/infra.sh plan`, then `./scripts/infra.sh apply`.
+
+The StorageClass is created inside `make up`, before the claim. It is not part
+of `kubernetes/kustomization.yaml`: the kustomization forces `namespace:
+mongodb`, and a StorageClass is cluster scoped. Applying the manifests without
+it leaves the PVC `Pending` on a class that does not exist, and the rollout
+times out.
+
+`make help` lists every target. The single steps each one chains stay
+available through the scripts in `scripts/`.
 
 ## Documentation
 
