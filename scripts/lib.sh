@@ -17,6 +17,20 @@ APP_NS="${APP_NS:-mongodb}"
 
 info() { echo "$*"; }
 
+# One line per step, so a chained target says what it is doing without adding
+# any wait of its own. Colour only when the output is a terminal.
+if [ -t 1 ]; then
+  STEP_ON="$(printf '\033[1;36m')"
+  STEP_OFF="$(printf '\033[0m')"
+else
+  STEP_ON=""
+  STEP_OFF=""
+fi
+
+step() { echo "${STEP_ON}==> $*${STEP_OFF}"; }
+
+done_msg() { echo "    $*"; }
+
 die() {
   echo "Error: $*" >&2
   exit 1
